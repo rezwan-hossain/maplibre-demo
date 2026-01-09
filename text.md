@@ -1,0 +1,7 @@
+- get list of Nearby named location
+  - OpenStreetMap Overpass API
+    - overpass query run on this https://overpass-turbo.eu/
+  - https://photon.komoot.io/
+  - https://pelias.io/ self hosted
+- get list of nearby POI
+  - https://www.mapillary.com/developer/api-documentation/
