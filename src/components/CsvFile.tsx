@@ -5,7 +5,10 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 type CsvRow = Record<string, string>;
 
 // const SAMPLE_CSV_URL = "/organizations-100.csv";
-const SAMPLE_CSV_URL = `${import.meta.env.BASE_URL}organizations-100000.csv`;
+// const SAMPLE_CSV_URL = `${import.meta.env.BASE_URL}organizations-100000.csv`;
+
+const BASE_URL = import.meta.env.BASE_URL || "/";
+const SAMPLE_CSV_URL = `${BASE_URL.replace(/\/$/, "")}/organizations-100.csv`;
 
 const CsvFile = () => {
   const [csvData, setCsvData] = useState<CsvRow[]>([]);
@@ -27,41 +30,40 @@ const CsvFile = () => {
     }
 
     setError("");
-
     parseCsvFile(file);
-
-    // Papa.parse<CsvRow>(file, {
-    //   header: true,
-    //   worker: true,
-    //   skipEmptyLines: true,
-    //   complete: (results) => {
-    //     if (results.data.length === 0) {
-    //       setError("CSV file is Empty.");
-    //     } else {
-    //       setHeaders(Object.keys(results.data[0]));
-    //       setCsvData(results.data);
-    //     }
-    //     console.log(results.data);
-    //   },
-    //   error: (err) => {
-    //     console.error(err);
-    //     setError("Error reading the CSV file.");
-    //   },
-    // });
   };
 
   const parseCsvFile = (file: File | string) => {
     Papa.parse<CsvRow>(file, {
       header: true,
-      worker: true,
-      skipEmptyLines: true,
+      worker: false,
+      skipEmptyLines: "greedy",
       complete: (results) => {
-        if (results.data.length === 0) {
+        // if (results.data.length === 0) {
+        //   setError("CSV file is Empty.");
+        // } else {
+        //   setHeaders(Object.keys(results.data[0]));
+        //   setCsvData(results.data);
+        // }
+
+        // Remove only null/undefined rows
+        const validRows = results.data.filter(
+          (row): row is CsvRow => row != null
+        );
+
+        if (validRows.length === 0) {
           setError("CSV file is Empty.");
-        } else {
-          setHeaders(Object.keys(results.data[0]));
-          setCsvData(results.data);
+          return;
         }
+
+        const fields = results.meta.fields;
+
+        if (!fields || fields.length === 0) {
+          setError("CSV headers not found.");
+          return;
+        }
+        setHeaders(Object.keys(validRows[0]));
+        setCsvData(validRows);
       },
       error: (err) => {
         console.error(err);
@@ -70,22 +72,50 @@ const CsvFile = () => {
     });
   };
 
+  // const loadSampleCsv = async () => {
+  //   setError("");
+  //   setCsvData([]);
+  //   setHeaders([]);
+
+  //   // Fetch and parse CSV from public folder
+  //   // parseCsvFile(SAMPLE_CSV_URL);
+  //   try {
+  //     // 1. Fetch the file from the public folder
+  //     const response = await fetch(SAMPLE_CSV_URL);
+
+  //     const csvText = await response.text();
+  //     parseCsvFile(csvText);
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError("Could not load sample file.");
+  //   }
+  // };
+
   const loadSampleCsv = async () => {
     setError("");
     setCsvData([]);
     setHeaders([]);
 
-    // Fetch and parse CSV from public folder
-    // parseCsvFile(SAMPLE_CSV_URL);
     try {
-      // 1. Fetch the file from the public folder
+      console.log("Fetching from:", SAMPLE_CSV_URL);
       const response = await fetch(SAMPLE_CSV_URL);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch CSV: ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("text/html")) {
+        throw new Error(
+          "Server returned HTML instead of CSV (Check file path)"
+        );
+      }
 
       const csvText = await response.text();
       parseCsvFile(csvText);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Could not load sample file.");
+      setError(err.message || "Could not load sample file.");
     }
   };
 
