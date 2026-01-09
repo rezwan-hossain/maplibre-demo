@@ -100,7 +100,7 @@ export async function getLocation(): Promise<[number, number]> {
       return [json.longitude, json.latitude];
     }
   } catch {
-    // intentionally ignored
+    console.error("Failed to fetch IP location");
   }
 
   return Dhaka;
@@ -135,4 +135,53 @@ export async function searchPlaces(
   );
 
   return res.json();
+}
+
+export interface BarikoiPlace {
+  id: number;
+  longitude: string | number;
+  latitude: string | number;
+  address: string;
+  address_bn?: string;
+  city: string;
+  area: string;
+  postCode?: number;
+  pType?: string;
+  uCode?: string;
+}
+
+export async function searchPlaces2(
+  query: string,
+  countryCode?: string
+): Promise<BarikoiPlace[]> {
+  if (!query) return [];
+
+  const API_KEY = import.meta.env.VITE_BARIKOI_API_KEY;
+
+  const baseUrl = "https://barikoi.xyz/v2/api/search/autocomplete/place";
+
+  const params = new URLSearchParams({
+    api_key: API_KEY,
+    q: query,
+    country_code: countryCode ?? "bd",
+  });
+
+  try {
+    const res = await fetch(`${baseUrl}?${params.toString()}`);
+
+    if (!res.ok) {
+      throw new Error(`Barikoi API error: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+
+    if (data.status === 200 && Array.isArray(data.places)) {
+      return data.places;
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Search failed:", error);
+    return [];
+  }
 }

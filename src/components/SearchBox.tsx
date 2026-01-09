@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
-import { searchPlaces, type SearchResult } from "../lib/api";
+import { searchPlaces2, type BarikoiPlace } from "../lib/api";
 
 type Props = {
   countryCode?: string | null;
-  onSelect: (lat: number, lng: number, label: string) => void;
+  onSelect: (lat: number, lng: number) => void;
 };
 
 const SearchBox = ({ onSelect, countryCode }: Props) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<BarikoiPlace[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [bkoiResults, setBkoiResults] = useState<BarikoiPlace[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -20,11 +21,17 @@ const SearchBox = ({ onSelect, countryCode }: Props) => {
         setResults([]);
         return;
       }
-      setResults(await searchPlaces(query, countryCode ?? undefined));
+      const results = await searchPlaces2(query, countryCode ?? undefined);
+      console.log("bkoi results", results);
+      setBkoiResults(results.slice(0, 5));
+      // setResults(await searchPlaces(query, countryCode ?? undefined));
+      setResults(results.slice(0, 5));
     }, 300);
 
     return () => clearTimeout(t);
   }, [query, countryCode]);
+
+  console.log("bkoi results", bkoiResults);
 
   // Click outside listener
   useEffect(() => {
@@ -41,10 +48,12 @@ const SearchBox = ({ onSelect, countryCode }: Props) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (r: SearchResult) => {
-    setQuery(r.display_name);
+  const handleSelect = (r: BarikoiPlace) => {
+    setQuery(r.address);
     setResults([]);
-    onSelect(parseFloat(r.lat), parseFloat(r.lon), r.display_name);
+    // onSelect(parseFloat(r.latitude), parseFloat(r.lon), r.display_name);
+    // onSelect(parseFloat(r.latitude), parseFloat(r.longitude));
+    onSelect(Number(r.latitude), Number(r.longitude));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -95,12 +104,69 @@ const SearchBox = ({ onSelect, countryCode }: Props) => {
           <ul className="border-t max-h-60 overflow-y-auto">
             {results.map((r, i) => (
               <li
-                key={`${r.lat}-${r.lon}`}
+                key={`${r.latitude}-${r.longitude}`}
                 onClick={() => handleSelect(r)}
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100
+                className={`group flex flex-col py-2 px-3 cursor-pointer transition-colors duration-150
                   ${i === activeIndex ? "bg-gray-100" : ""}`}
               >
-                {r.display_name}
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-start gap-2 w-full">
+                      <div className="w-4 m-auto shrink-0">
+                        <svg
+                          stroke="currentColor"
+                          fill="currentColor"
+                          strokeWidth={0}
+                          viewBox="0 0 384 512"
+                          className="text-gray-400"
+                          height="1em"
+                          width="1em"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-900 whitespace-normal  w-full">
+                        {r.address}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-2 ml-4">
+                  <span className="px-2 py-0.5 text-xs bg-[#e0feed] text-gray-800 rounded-full flex items-center gap-1">
+                    <svg
+                      stroke="currentColor"
+                      fill="currentColor"
+                      strokeWidth={0}
+                      viewBox="0 0 576 512"
+                      height={12}
+                      width={12}
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M280.37 148.26L96 300.11V464a16 16 0 0 0 16 16l112.06-.29a16 16 0 0 0 15.92-16V368a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v95.64a16 16 0 0 0 16 16.05L464 480a16 16 0 0 0 16-16V300L295.67 148.26a12.19 12.19 0 0 0-15.3 0zM571.6 251.47L488 182.56V44.05a12 12 0 0 0-12-12h-56a12 12 0 0 0-12 12v72.61L318.47 43a48 48 0 0 0-61 0L4.34 251.47a12 12 0 0 0-1.6 16.9l25.5 31A12 12 0 0 0 45.15 301l235.22-193.74a12.19 12.19 0 0 1 15.3 0L530.9 301a12 12 0 0 0 16.9-1.6l25.5-31a12 12 0 0 0-1.7-16.93z" />
+                    </svg>
+                    {r.pType}
+                  </span>
+                  <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full flex items-center gap-1">
+                    <svg
+                      stroke="currentColor"
+                      fill="none"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      height={12}
+                      width={12}
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M12 19h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v4.5" />
+                      <path d="M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879z" />
+                      <path d="M19 18v.01" />
+                      <path d="M3 7l9 6l9 -6" />
+                    </svg>
+                    {r.postCode}
+                  </span>
+                </div>
               </li>
             ))}
           </ul>

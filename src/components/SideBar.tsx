@@ -1,23 +1,24 @@
-import type { ReverseGeocodeResponse } from "../lib/api";
+import type { BarikoiReverseGeocodeResponse } from "../lib/reverceLocation";
 import type { SelectedLocation } from "./MapBox";
 
 type Props = {
   selectedLocation: SelectedLocation;
   isLoading: boolean;
-  address?: ReverseGeocodeResponse | null;
+  address?: BarikoiReverseGeocodeResponse | null;
   onClose: () => void;
 };
 const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
-  console.log(address);
+  console.log("sidebar", address);
 
   const handleCopy = async () => {
     try {
-      const textToCopy = `${address?.lat}, ${address?.lon}`;
-      await navigator.clipboard.writeText(textToCopy);
+      // const textToCopy = `${address?.place.latitude}, ${address?.place.longitude}`;
+      // await navigator.clipboard.writeText(textToCopy);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
   };
+
   return (
     <div
       className={`absolute top-0 left-0 h-full w-72 bg-white shadow-xl z-20
@@ -40,10 +41,10 @@ const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
         ) : (
           <>
             <div className="flex flex-col gap-1 pb-4 mt-0">
-              <div className="px-4 mt-8 flex align-middle">
+              {/* <div className="px-4 mt-8 flex align-middle">
                 <div className="py-2">
                   <h1 className="text-2xl font-bold text-gray-800 select-text">
-                    {address?.name}
+                    {address?.}
                   </h1>
                   <div className="flex items-center gap-2 py-2 text-sm">
                     <span className="bg-blue-100 text-gray-600 px-3 py-1 rounded-full">
@@ -51,7 +52,7 @@ const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="px-4">
                 <div className="p-2 border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer relative rounded-lg">
@@ -74,7 +75,7 @@ const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
                   </div>
                   <div className="space-y-3">
                     <p className="text-gray-800 text-[15px] leading-relaxed font-medium border-l-4 border-green-500 pl-3 py-1 bg-green-50/50 rounded-r-md">
-                      {address?.display_name}
+                      {address?.place.address}
                     </p>
                   </div>
                 </div>
@@ -115,7 +116,7 @@ const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
                         <span className="text-sm font-medium">Sub Area</span>
                       </div>
                       <p className="text-gray-800 font-medium">
-                        {address?.address.suburb}
+                        {address?.place.area_components.sub_area}
                       </p>
                     </div>{" "}
                     <div className="p-2 bg-gray-50 rounded-lg  transition-colors">
@@ -135,7 +136,7 @@ const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
                         <span className="text-sm font-medium">Area</span>
                       </div>
                       <p className="text-gray-800 font-medium">
-                        {address?.address.quarter}
+                        {address?.place.area}
                       </p>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-lg  transition-colors">
@@ -155,7 +156,7 @@ const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
                         <span className="text-sm font-medium">Postcode</span>
                       </div>
                       <p className="text-gray-800 font-medium">
-                        {address?.address.postcode}
+                        {address?.place.postCode}
                       </p>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-lg  transition-colors">
@@ -175,7 +176,7 @@ const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
                         <span className="text-sm font-medium">District</span>
                       </div>
                       <p className="text-gray-800 font-medium">
-                        {address?.address.state}
+                        {address?.place.district}
                       </p>
                     </div>
                   </div>
@@ -203,8 +204,11 @@ const SideBar = ({ selectedLocation, isLoading, address, onClose }: Props) => {
                           <path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z" />
                         </svg>
                         <span className="font-medium">Location:</span>
-                        <span className="font-mono text-xs">
+                        {/* <span className="font-mono text-xs">
                           {address?.lat}, {address?.lon}
+                        </span> */}
+                        <span className="font-mono text-xs">
+                          {/* {address?.place.latitude}, {address?.place.longitude} */}
                         </span>
                       </div>
                       <button

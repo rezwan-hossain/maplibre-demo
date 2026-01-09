@@ -9,11 +9,15 @@ import Map, {
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Dhaka } from "../lib/constant";
 import { useEffect, useRef, useState } from "react";
-import { reverseGeocode, type ReverseGeocodeResponse } from "../lib/api";
+
 import SearchBox from "./SearchBox";
 import { getCountryFromIP } from "../lib/getCountryFromIP";
 import SideBar from "./SideBar";
 import { Link } from "wouter";
+import {
+  reverseGeocode2,
+  type BarikoiReverseGeocodeResponse,
+} from "../lib/reverceLocation";
 
 type Point = {
   longitude: number;
@@ -26,14 +30,17 @@ export type SelectedLocation = {
   lat: number;
 } | null;
 
+const BARIKOI_STYLE_URL = `https://map.barikoi.com/styles/osm-liberty/style.json?key=${
+  import.meta.env.VITE_BARIKOI_API_KEY
+}`;
+
 const MapBox = () => {
   const [countryCode, setCountryCode] = useState<string | null>(null);
   const [point, setPoint] = useState<Point | null>(null);
   // const [address, setAddress] = useState<ReverseGeocodeResponse | null>(null);
   const [isSidebarLoading, setIsSidebarLoading] = useState(false);
-  const [sidebarData, setSidebarData] = useState<ReverseGeocodeResponse | null>(
-    null
-  );
+  const [sidebarData, setSidebarData] =
+    useState<BarikoiReverseGeocodeResponse | null>(null);
   const [copied, setCopied] = useState(false);
 
   const [selectedLocation, setSelectedLocation] =
@@ -47,7 +54,7 @@ const MapBox = () => {
     });
   }, []);
 
-  const handleSearchSelect = (lat: number, lng: number) => {
+  const handleSearchSelect = async (lat: number, lng: number) => {
     setPoint({ latitude: lat, longitude: lng });
 
     mapRef.current?.flyTo({
@@ -55,6 +62,22 @@ const MapBox = () => {
       zoom: 15,
       duration: 800,
     });
+
+    setSelectedLocation({
+      lng,
+      lat,
+      id: Date.now(),
+    });
+
+    setIsSidebarLoading(true);
+    setSidebarData(null);
+
+    try {
+      const result = await reverseGeocode2(lat, lng);
+      setSidebarData(result);
+    } finally {
+      setIsSidebarLoading(false);
+    }
   };
 
   const handleDoubleClick = async (e: MapLayerMouseEvent) => {
@@ -70,8 +93,10 @@ const MapBox = () => {
     setSidebarData(null);
 
     try {
-      const result = await reverseGeocode(lat, lng);
-      setSidebarData(result);
+      // const result = await reverseGeocode(lat, lng);
+      const result2 = await reverseGeocode2(lat, lng);
+      console.log("result2", result2);
+      setSidebarData(result2);
     } finally {
       setIsSidebarLoading(false);
     }
@@ -109,7 +134,8 @@ const MapBox = () => {
           zoom: 12,
         }}
         // style={{ width: 600, height: 400 }}
-        mapStyle="https://tiles.openfreemap.org/styles/bright"
+        // mapStyle="https://tiles.openfreemap.org/styles/bright"
+        mapStyle={BARIKOI_STYLE_URL}
         // onClick={() => setPoint(null)}
         doubleClickZoom={false}
         onClick={handleClick}
