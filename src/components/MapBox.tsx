@@ -8,7 +8,6 @@ import Map, {
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Dhaka } from "../lib/constant";
-import YouAreHere from "./you-are-here";
 import { useEffect, useRef, useState } from "react";
 import { reverseGeocode, type ReverseGeocodeResponse } from "../lib/api";
 import SearchBox from "./SearchBox";
@@ -30,7 +29,7 @@ export type SelectedLocation = {
 const MapBox = () => {
   const [countryCode, setCountryCode] = useState<string | null>(null);
   const [point, setPoint] = useState<Point | null>(null);
-  const [address, setAddress] = useState<ReverseGeocodeResponse | null>(null);
+  // const [address, setAddress] = useState<ReverseGeocodeResponse | null>(null);
   const [isSidebarLoading, setIsSidebarLoading] = useState(false);
   const [sidebarData, setSidebarData] = useState<ReverseGeocodeResponse | null>(
     null
@@ -80,9 +79,10 @@ const MapBox = () => {
 
   const handleClick = async (e: MapLayerMouseEvent) => {
     setPoint(null);
-    const { lng, lat } = e.lngLat;
-    const result = await reverseGeocode(lat, lng);
-    setAddress(result);
+    console.log(e.lngLat);
+    // const { lng, lat } = e.lngLat;
+    // const result = await reverseGeocode(lat, lng);
+    // setAddress(result);
   };
 
   const handleCopy = async () => {
@@ -122,37 +122,13 @@ const MapBox = () => {
           });
         }}
       >
-        {/* <div className="absolute top-4 left-1/2 -translate-x-1/2 z-100">
-          <div className="flex items-center bg-white rounded-full shadow-lg px-4 py-2 w-80">
-            <svg
-              className="w-5 h-5 text-gray-400 mr-2"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35m1.1-4.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"
-              />
-            </svg>
-
-            <input
-              type="text"
-              placeholder="Search location..."
-              className="w-full outline-none bg-transparent text-sm text-gray-700 placeholder-gray-400"
-            />
-          </div>
-        </div> */}
-
         <SearchBox onSelect={handleSearchSelect} countryCode={countryCode} />
 
         {/* sidebar */}
         <SideBar
           selectedLocation={selectedLocation}
           isLoading={isSidebarLoading}
-          address={address}
+          address={sidebarData}
           onClose={() => {
             setSelectedLocation(null);
             setIsSidebarLoading(false);

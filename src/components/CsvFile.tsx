@@ -14,8 +14,6 @@ const CsvFile = () => {
 
   const parentRef = useRef<HTMLDivElement>(null);
 
-  console.log("sample csv url", SAMPLE_CSV_URL);
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
@@ -64,7 +62,6 @@ const CsvFile = () => {
           setHeaders(Object.keys(results.data[0]));
           setCsvData(results.data);
         }
-        console.log(results.data);
       },
       error: (err) => {
         console.error(err);

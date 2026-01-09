@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Dhaka } from "../lib/constant";
 import { Popup, useMap } from "react-map-gl/maplibre";
 import { getLocation } from "../lib/api";
