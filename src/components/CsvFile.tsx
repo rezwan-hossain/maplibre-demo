@@ -8,10 +8,7 @@ type CsvRow = Record<string, string>;
 // const SAMPLE_CSV_URL = `${import.meta.env.BASE_URL}organizations-100000.csv`;
 
 const BASE_URL = import.meta.env.BASE_URL || "/";
-const SAMPLE_CSV_URL = `${BASE_URL.replace(
-  /\/$/,
-  ""
-)}/organizations-100000.csv`;
+const SAMPLE_CSV_URL = `${BASE_URL.replace(/\/$/, "")}/organizations-100.csv`;
 
 const CsvFile = () => {
   const [csvData, setCsvData] = useState<CsvRow[]>([]);
